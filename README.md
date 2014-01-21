@@ -100,8 +100,9 @@ $log[':timer1']("Write to default level with timer value");
 ```
 Will output
 ```
-[2014-01-21 10:43:08.59] Info: Aplication start
-[2014-01-21 10:43:09.59] 1.0005s Info: Application end
+[2014-01-21 11:30:45.22] Info: Aplication start 
+[2014-01-21 11:30:46.22] 1.0007s Info: Application end 
+[2014-01-21 11:30:46.22] 1.0010s Info: Write to default level with timer value 
 ```
 You can reset timer
 ```php
