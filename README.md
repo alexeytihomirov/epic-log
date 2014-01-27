@@ -215,7 +215,7 @@ Buffer with custom size
 -----------------------
 By default size is 0 (unlimited)
 ```php
-$log = new Epilog("logger://buffer"); // You can use Epilog::BUDDER_ADDRESS constant instead of "logger://buffer"
+$log = new Epilog("logger://buffer"); // You can use Epilog::BUFFER_ADDRESS constant instead of "logger://buffer"
 $log->bufferSize = 2; // Store 2 last messages
 $log("Foo");
 $log("Bar");
