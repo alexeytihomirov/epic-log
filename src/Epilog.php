@@ -12,7 +12,7 @@ class Epilog implements \ArrayAccess
         'emergency' => 800
     ];
     public $dateFormat = 'Y-m-d H:i:s';
-    public $channels, $level, $context, $formatter, $filter, $strictlvl;
+    public $channels, $level, $formatter, $context, $filter, $strictlvl, $contextParser;
     public $timers = [];
     public $buffer = [];
     public $bufferSize = 0;
@@ -47,20 +47,34 @@ class Epilog implements \ArrayAccess
             $p['timer'] = is_float($p['timer']) ? number_format($p['timer'], 4) : $p['timer'];
             return $p;
         };
+        
+        $this->contextParser = function($message, array $context = []) {
+            $replace = [];
+            $allowed = [".", "-", "_"];
+            foreach ($context as $key => $val) {
+                if ( ctype_alnum( str_replace($allowed, '', $key ) ) ) {
+                    $replace['{' . $key . '}'] = $val;
+                }
+            }
+
+            return strtr($message, $replace);
+        };
     }
 
-    public function log($text, $level = 'info', $timer = null)
+    public function put($text, array $context = [], $level = 'info', $timer = null)
     {
         if ($this->turnedOff || (isset($this->levels[$level]) && $this->levels[$this->level] > $this->levels[$level])) return;
 
         $logString = $text[0] == "\0" ? substr($text, 1) : null;
         $timerError = null !== $timer ? "[timer_{$timer}_not_found]" : null;
+        $context = is_array($this->context) ? array_replace_recursive($this->context, $context) : $context;
+        $contextString=json_encode($context);
         $p = [
             'date' => date($this->dateFormat),
             'ms' => substr((string)microtime(), 2, 6),
             'timer' => isset($this->timers[$timer]) ? microtime(true) - $this->timers[$timer] : $timerError,
             'level' => ucfirst($level),
-            'context' => $this->context,
+            'context' => $contextString,
             'text' => $text
         ];
         foreach ($this->filter as $filter) {
@@ -71,10 +85,13 @@ class Epilog implements \ArrayAccess
         };
         if (!is_callable($this->formatter)) {
             $this->formatter = function ($p, $get) {
-                return "[{$get('date')}{$get('ms', '.')}] {$get('timer', '', 's ')}{$get('level')}: {$get('text')} {$get('context', '{', '}')}" . PHP_EOL;
+                return "[{$get('date')}{$get('ms', '.')}] {$get('timer', '', 's ')}{$get('level')}: {$get('text')} {$get('context')}" . PHP_EOL;
             };
         }
         $logString = $logString ? : call_user_func($this->formatter, $p, $get);
+        if(is_callable($this->contextParser)) {
+            $logString = call_user_func($this->contextParser, $logString, $context);
+        }
         foreach ($this->channels as $chlvl => $channels) {
             if (($this->strictlvl && $level == $chlvl)
                 || ($chlvl == "=" . $level)
@@ -99,9 +116,9 @@ class Epilog implements \ArrayAccess
         }
     }
 
-    public function __invoke($logString, $level = 'info', $timer = "")
+    public function __invoke($logString, array $context = [], $level = "info", $timer = "")
     {
-        return call_user_func_array([$this, "log"], func_get_args());
+        return call_user_func_array([$this, "put"], func_get_args());
     }
 
     public function offsetSet($offset, $value)
@@ -130,8 +147,8 @@ class Epilog implements \ArrayAccess
         $rules = explode(':', $key);
         $timer = isset($rules[1]) ? $rules[1] : null;
         $level = isset($this->levels[$rules[0]]) ? $rules[0] : $this->level;
-        return function ($string) use ($level, $timer) {
-            $this->log($string, $level, $timer);
+        return function ($string, array $context = []) use ($level, $timer) {
+            $this->put($string, $context, $level, $timer);
         };
     }
 
