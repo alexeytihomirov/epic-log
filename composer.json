@@ -2,6 +2,8 @@
     "name": "mercy/epilog",
     "description": "Very useful logger for php 5.4+",
     "keywords": ["log", "logger"],
+    "homepage": "http://github.com/alexeytihomirov/Epilog/",
+    "type": "library",
     "license": "MIT",
     "authors": [
         {
@@ -9,9 +11,12 @@
             "email": "hellpower@gmail.com"
         }
     ],
+    "require": {
+        "php": ">=5.4.0"
+    },
     "autoload": {
-        "psr-0": {
-            "Mercy\\": "src/"
+        "psr-4": {
+            "Mercy\\": "src/Mercy/"
         }
     },
     "extra": {
