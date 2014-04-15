@@ -1,0 +1,22 @@
+{
+    "name": "mercy/epilog",
+    "description": "Very useful logger for php 5.4+",
+    "keywords": ["log", "logger"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexey Tihomirov",
+            "email": "hellpower@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "Mercy\\": "src/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "master"
+        }
+    }
+}
