@@ -1,5 +1,4 @@
 <?php
-namespace Mercy;
 class Epilog implements \ArrayAccess
 {
     public $levels = [

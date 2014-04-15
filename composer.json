@@ -1,5 +1,5 @@
 {
-    "name": "mercy/epilog",
+    "name": "epilog/epilog",
     "description": "Very useful logger for php 5.4+",
     "keywords": ["log", "logger"],
     "homepage": "http://github.com/alexeytihomirov/Epilog/",
@@ -15,9 +15,7 @@
         "php": ">=5.4.0"
     },
     "autoload": {
-        "psr-4": {
-            "Mercy\\": "src/Mercy/"
-        }
+        "psr-0": { "Epilog": "src/" }
     },
     "extra": {
         "branch-alias": {
