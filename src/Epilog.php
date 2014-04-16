@@ -121,8 +121,8 @@ class Epilog implements \ArrayAccess
         foreach($context as $contextKey=>&$contextValue) {
             $contextValue = $this->toString($contextValue, ['key'=>$contextKey]);
         }
-        
-        $contextString=json_encode($context);
+
+        $contextString=$context?json_encode($context):"";
         $p = [
             'date' => date($this->dateFormat),
             'ms' => substr((string)microtime(), 2, 6),
