@@ -15,6 +15,7 @@ class Epilog implements \ArrayAccess
     public $channels, $level, $formatter, $context, $filter, $strictlvl, $contextParser;
     public $timers = [];
     public $buffer = [];
+    public $toStringFilters = [];
     public $bufferSize = 0;
 
     protected $turnedOff = false;
@@ -47,8 +48,12 @@ class Epilog implements \ArrayAccess
             $p['timer'] = is_float($p['timer']) ? number_format($p['timer'], 4) : $p['timer'];
             return $p;
         };
-        
+       
+        // PSR-3 compatible context parser
         $this->contextParser = function($message, array $context = []) {
+            if (false === strpos($message, '{')) {
+                return $message;
+            }
             $replace = [];
             $allowed = [".", "-", "_"];
             foreach ($context as $key => $val) {
@@ -56,24 +61,73 @@ class Epilog implements \ArrayAccess
                     $replace['{' . $key . '}'] = $val;
                 }
             }
-
             return strtr($message, $replace);
         };
+        
+        $this->toStringFilters['array'] = function($value) {
+            if(is_array($value)) return str_replace(["\r","\n"],"",var_export($value,true));
+            return $value;
+        };
+
+        $this->toStringFilters['object'] = function($value) {
+            if(is_object($value)){
+                if(method_exists($value , '__toString')) {
+                    return (string)$value;
+                }else{
+                    return str_replace(["\r","\n"],"",var_export($value,true));
+                }
+            }
+            return $value;
+        };
+
+        $this->toStringFilters['bool'] = function($value) {
+            if(is_bool($value)) return $value?"true":"false";
+            return $value;
+        };
+        
+        $this->toStringFilters['resource'] = function($value) {
+            if(is_resource($value)) return get_resource_type($value);
+            return $value;
+        };
+        
+        $this->toStringFilters['exception'] = function($value, $extra) {
+            if($value instanceof \Exception) {
+                if(isset($extra['key']) && $extra['key'] != "exception") {
+                    return null;
+                }else{
+                    return $value->getMessage();
+                }
+            }
+            return $value;
+        };
+    }
+    
+    public function toString($value, $extra = []) {
+        foreach($this->toStringFilters as $filter) {
+            $value = $filter($value, $extra);
+        }
+        return $value;
     }
 
     public function put($text, array $context = [], $level = 'info', $timer = null)
     {
         if ($this->turnedOff || (isset($this->levels[$level]) && $this->levels[$this->level] > $this->levels[$level])) return;
 
+        $text = (string)$text;
         $logString = $text[0] == "\0" ? substr($text, 1) : null;
         $timerError = null !== $timer ? "[timer_{$timer}_not_found]" : null;
         $context = is_array($this->context) ? array_replace_recursive($this->context, $context) : $context;
+        
+        foreach($context as $contextKey=>&$contextValue) {
+            $contextValue = $this->toString($contextValue, ['key'=>$contextKey]);
+        }
+        
         $contextString=json_encode($context);
         $p = [
             'date' => date($this->dateFormat),
             'ms' => substr((string)microtime(), 2, 6),
             'timer' => isset($this->timers[$timer]) ? microtime(true) - $this->timers[$timer] : $timerError,
-            'level' => ucfirst($level),
+            'level' => $level,
             'context' => $contextString,
             'text' => $text
         ];
@@ -85,6 +139,7 @@ class Epilog implements \ArrayAccess
         };
         if (!is_callable($this->formatter)) {
             $this->formatter = function ($p, $get) {
+                $p['level'] = ucfirst($p['level']);
                 return "[{$get('date')}{$get('ms', '.')}] {$get('timer', '', 's ')}{$get('level')}: {$get('text')} {$get('context')}" . PHP_EOL;
             };
         }
