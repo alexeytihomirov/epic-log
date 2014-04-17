@@ -54,32 +54,16 @@ $app['logger'] = $app->share(function(){
 
 Different severity levels
 -------------------------
-Supports 8 standard severity levels. You can easly add your own.
-<dl>
-  <dt>debug</dt>
-  <dd>debug-level messages</dd>
+Supports 8 standard severity levels. You can easly add your own.  
   
-  <dt>info</dt>
-  <dd>informational messages</dd>
-  
-  <dt>notice</dt>
-  <dd>normal but significant condition</dd>
-  
-  <dt>warning</dt>
-  <dd>warning conditions</dd>
-  
-  <dt>error</dt>
-  <dd>error conditions</dd>
-  
-  <dt>critical</dt>
-  <dd>critical conditions</dd>
-  
-  <dt>alert</dt>
-  <dd>action must be taken immediately</dd>
-  
-  <dt>emergency</dt>
-  <dd>system is unusable</dd>
-</dl>
+__debug__ - debug-level messages  
+__info__ - informational messages
+__notice__ - normal but significant condition
+__warning__ - warning conditions
+__error__ - error conditions
+__critical__ - critical conditions
+__alert__ - action must be taken immediately
+__emergency__ - system is unusable
 
 How to write to different levels?
 ```php
