@@ -18,7 +18,7 @@ Will output
 
 Main goal
 ---------
-Epilog was made as tool for developers by developers. You can make hot start and then change everything by accessing public properties of object. Main goal is to make debug as simple as we can! Many years of debug expirience are here in Epilog. What about other loggers? They are too big, standartized and uncomfortable. With Epilog you can end your application while your friend is setting up another logger.
+Epilog was made as tool for developers by developers. You can make hot start and then change everything by accessing public properties of object. Main goal is to make debug as simple as we can! Many years of debug expirience are here in Epilog. What about other loggers? They are too big and uncomfortable. With Epilog you can end your application while your friend is setting up another logger.
 
 Advanced features
 -----------------
