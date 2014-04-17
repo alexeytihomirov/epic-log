@@ -22,6 +22,7 @@ Epilog was made as tool for developers by developers. You can make hot start and
 
 Advanced features
 -----------------
+- PSR-3 support
 - Different severity levels
 - Add your own severity levels
 - Select strict severity level (handle only selected level)
@@ -36,6 +37,20 @@ Advanced features
 - Turn off logger
 - Buffer with custom size
 - Date format change
+
+PSR-3 support
+-------------
+Epilog is [PSR-3 standard](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md) compatible. Use Pepilog class that implemets Psr\Log\LoggerInterface. All psr-3 tests are passed perfectly. You can use Pepilog with Silex, Symfony2 and others.
+
+Silex example:
+```php
+require_once __DIR__.'/../vendor/autoload.php';
+$app = new Silex\Application();
+
+$app['logger'] = $app->share(function(){
+	return new Pepilog('/tmp/temp.log', 'debug');
+});
+```
 
 Different severity levels
 -------------------------
@@ -149,14 +164,16 @@ $log = new Epilog($customHandler);
 ```
 Context support
 ---------------
-You can add context to log
+You can use global and local context. It accepts only arrays of data. 
 ```php
-$log->context = "userid=121";
-$log("Message with context");
+$log->context = ['user_name'=>'Bob']; // Setting up global context
+$log("User {user_name}({user_id}) is logged in", ['user_id'=>33]); // Adding local context
+$log("User {user_name}({user_id}) is logged out"); // Without local context
 ```
 Will output
 ```
-[2014-01-21 11:17:45.56] Info: Message with context {userid=121}
+[2014-01-21 11:17:45.56] info: User Bob(33) is logged in {"user_name":"Bob","user_id":33}
+[2014-01-21 11:17:45.56] info: User Bob({user_id}) is logged out {"user_name":"Bob"}
 ```
 Setup custom formatter
 ----------------------
