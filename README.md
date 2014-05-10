@@ -18,10 +18,11 @@ Will output
 
 Main goal
 ---------
-Epilog was made as tool for developers by developers. You can make hot start and then change everything by accessing public properties of object. Main goal is to make debug as simple as we can! Many years of debug expirience are here in Epilog. What about other loggers? They are too big, standartized and uncomfortable. With Epilog you can end your application while your friend is setting up another logger.
+Epilog was made as tool for developers by developers. You can make hot start and then change everything by accessing public properties of object. Main goal is to make debug as simple as we can! Many years of debug expirience are here in Epilog. What about other loggers? They are too big and uncomfortable. With Epilog you can end your application while your friend is setting up another logger.
 
 Advanced features
 -----------------
+- PSR-3 support
 - Different severity levels
 - Add your own severity levels
 - Select strict severity level (handle only selected level)
@@ -37,34 +38,32 @@ Advanced features
 - Buffer with custom size
 - Date format change
 
+PSR-3 support
+-------------
+Epilog is [PSR-3 standard](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-3-logger-interface.md) compatible. Use Pepilog class that implemets Psr\Log\LoggerInterface. All psr-3 tests are passed perfectly. You can use Pepilog with Silex, Symfony2 and others.
+
+Silex example:
+```php
+require_once __DIR__.'/../vendor/autoload.php';
+$app = new Silex\Application();
+
+$app['logger'] = $app->share(function(){
+	return new Pepilog('/tmp/temp.log', 'debug');
+});
+```
+
 Different severity levels
 -------------------------
-Supports 8 standard severity levels. You can easly add your own.
-<dl>
-  <dt>debug</dt>
-  <dd>debug-level messages</dd>
+Supports 8 standard severity levels. You can easly add your own.  
   
-  <dt>info</dt>
-  <dd>informational messages</dd>
-  
-  <dt>notice</dt>
-  <dd>normal but significant condition</dd>
-  
-  <dt>warning</dt>
-  <dd>warning conditions</dd>
-  
-  <dt>error</dt>
-  <dd>error conditions</dd>
-  
-  <dt>critical</dt>
-  <dd>critical conditions</dd>
-  
-  <dt>alert</dt>
-  <dd>action must be taken immediately</dd>
-  
-  <dt>emergency</dt>
-  <dd>system is unusable</dd>
-</dl>
+__debug__ - debug-level messages  
+__info__ - informational messages
+__notice__ - normal but significant condition
+__warning__ - warning conditions
+__error__ - error conditions
+__critical__ - critical conditions
+__alert__ - action must be taken immediately
+__emergency__ - system is unusable
 
 How to write to different levels?
 ```php
@@ -149,14 +148,16 @@ $log = new Epilog($customHandler);
 ```
 Context support
 ---------------
-You can add context to log
+You can use global and local context. It accepts only arrays of data. 
 ```php
-$log->context = "userid=121";
-$log("Message with context");
+$log->context = ['user_name'=>'Bob']; // Setting up global context
+$log("User {user_name}({user_id}) is logged in", ['user_id'=>33]); // Adding local context
+$log("User {user_name}({user_id}) is logged out"); // Without local context
 ```
 Will output
 ```
-[2014-01-21 11:17:45.56] Info: Message with context {userid=121}
+[2014-01-21 11:17:45.56] info: User Bob(33) is logged in {"user_name":"Bob","user_id":33}
+[2014-01-21 11:17:45.56] info: User Bob({user_id}) is logged out {"user_name":"Bob"}
 ```
 Setup custom formatter
 ----------------------
