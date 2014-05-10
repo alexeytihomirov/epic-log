@@ -114,9 +114,11 @@ class Epilog implements \ArrayAccess
         if ($this->turnedOff || (isset($this->levels[$level]) && $this->levels[$this->level] > $this->levels[$level])) return;
 
         $text = (string)$text;
+        $logString = "";
         if(strlen($text)) {
             $logString = $text[0] == "\0" ? substr($text, 1) : null;
         }
+
         $timerError = null !== $timer ? "[timer_{$timer}_not_found]" : null;
         $context = is_array($this->context) ? array_replace_recursive($this->context, $context) : $context;
         
