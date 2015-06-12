@@ -16,6 +16,15 @@ Will output
 [2014-01-20 11:36:36.43] Info: By default php://stdout is output stream and info is selected severity
 ```
 
+Install
+-------
+Just add epilog/epilog to require section in composer.json and install it. For example:
+```
+    "require": {
+        "epilog/epilog": "1.1.0"
+    }
+```
+
 Main goal
 ---------
 Epilog was made as tool for developers by developers. You can make hot start and then change everything by accessing public properties of object. Main goal is to make debug as simple as we can! Many years of debug expirience are here in Epilog. What about other loggers? They are too big and uncomfortable. With Epilog you can end your application while your friend is setting up another logger.
