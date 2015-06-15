@@ -36,9 +36,9 @@ Advanced features
 - Add your own severity levels
 - Select strict severity level (handle only selected level)
 - Timers
-- Different channels support
 - Handle strict severity levels by different channels
 - Custom handlers
+- Different channels support
 - Context support
 - Setup custom formatter
 - Setup custom filter set
@@ -98,7 +98,7 @@ Timers
 ------
 You can setup and use different timers in your application
 ```php
-$log['timer1'] = 'start';
+$log->timerStart('timer1');
 $log['info']("Aplication start");
 
 sleep(1);
@@ -114,22 +114,11 @@ Will output
 ```
 You can reset timer
 ```php
-$log['timer1'] = 'reset'; // or 'start' again
+$log->timerReset('timer1');
 ```
-Or remove it
+Or stop it
 ```php
-unset($log['timer1']);
-```
-Different channels support with different level
--------------------------------------------------------
-There is simple way to setup different channels. You can use severity standard and strict notation.
-```php
-$channels = [
-  'info'  => ["php://stdout"],
-  'error' => ["php://stderr", "/var/log/application_error.log"], // These handlers will process error+ levels
-  '=debug' => ["/tmp/application_debug.log"]  // These handlers will process only debug level
-];
-$log = new Epilog($channels);
+$log->timerStop('timer1');
 ```
 Custom handlers
 ---------------
@@ -154,6 +143,17 @@ $customHandler = function($logString, $params) use ($config) {
   $stmt->execute();
 }
 $log = new Epilog($customHandler);
+```
+Different channels support with different level
+-------------------------------------------------------
+There is simple way to setup different channels. You can use severity standard and strict notation.
+```php
+$channels = [
+  'info'  => ["php://stdout", function($logString, $params){file_put_contents('filename', $text);}],
+  'error' => ["php://stderr", "/var/log/application_error.log"], // These handlers will process error+ levels
+  '=debug' => ["/tmp/application_debug.log"]  // These handlers will process only debug level
+];
+$log = new Epilog($channels);
 ```
 Context support
 ---------------
@@ -202,6 +202,13 @@ $log->filter[] = function($params){
   return $params;
 };
 ```
+Available params:
+- date
+- ms
+- timer
+- level
+- context
+- text
 Log raw data
 ------------
 Just concatenate Epilog::RAW or add null byte before log string:
@@ -213,13 +220,17 @@ $log("\0Raw log string 2\n");
 Raw log string
 Raw log string 2
 ```
-Turn off logger
+Turn on/off logger
 ---------------
 Simply setup log level to "off" or use Epilog::TURN_OFF constant
 ```php
-$log = new Epilog("php://stdout", "off");
-//or
-$log2 = new Epilog("php://stdout", Epilog::TURN_OFF);
+$log = new Epilog();
+$log->turnOff();
+
+echo $log->status(); // off
+$log->turnOn();
+echo $log->status(); // on
+
 ```
 Buffer with custom size
 -----------------------

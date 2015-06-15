@@ -12,44 +12,44 @@ class Epilog implements \ArrayAccess
         'emergency' => 800
     ];
     public $dateFormat = 'Y-m-d H:i:s';
-    public $channels, $level, $formatter, $context, $filter, $strictlvl, $contextParser;
+    public $channels, $formatter, $context, $filter, $strictlvl, $contextParser;
     public $timers = [];
     public $buffer = [];
     public $toStringFilters = [];
     public $bufferSize = 0;
 
     protected $turnedOff = false;
+    protected $level;
 
     const RAW = "\0";
     const BUFFER_ADDRESS = "logger://buffer";
-    const TURN_OFF = "off";
 
     public function __construct($channel = "php://stdout", $level = 'info', $formatter = null)
     {
-        if ($level == self::TURN_OFF) {
-            $this->turnedOff = true;
-            return;
-        }
-        if ($level[0] == "=") {
-            $this->strictlvl = true;
-            $level = substr($level, 1);
-        }
-        $this->level = $level;
-        if (!array_key_exists($level, $this->levels)) {
-            $this->level = 'info';
-            trigger_error("Undefined log level \"{$level}\"", E_USER_NOTICE);
-        }
+        $this->setLevel($level);
+
         $this->channels = is_array($channel) ? $channel : [$level => [$channel]];
+
         if (is_callable($formatter)) {
             $this->formatter = $formatter;
         }
-        $this->filter['default'] = function ($p) {
+
+        $this->initDefaultFilter();
+        // PSR-3 compatible context parser
+        $this->initContextParset();
+        $this->initToStringFilters();
+
+    }
+
+    public function initDefaultFilter(){
+        $this->filter['default'] = function (array $p) {
             $p['ms'] = substr($p['ms'], 0, 2);
             $p['timer'] = is_float($p['timer']) ? number_format($p['timer'], 4) : $p['timer'];
             return $p;
         };
-       
-        // PSR-3 compatible context parser
+    }
+
+    public function initContextParset() {
         $this->contextParser = function($message, array $context = []) {
             if (false === strpos($message, '{')) {
                 return $message;
@@ -63,12 +63,13 @@ class Epilog implements \ArrayAccess
             }
             return strtr($message, $replace);
         };
-        
+    }
+
+    public function initToStringFilters() {
         $this->toStringFilters['array'] = function($value) {
             if(is_array($value)) return str_replace(["\r","\n"],"",var_export($value,true));
             return $value;
         };
-
         $this->toStringFilters['object'] = function($value) {
             if(is_object($value)){
                 if(method_exists($value , '__toString')) {
@@ -79,17 +80,14 @@ class Epilog implements \ArrayAccess
             }
             return $value;
         };
-
         $this->toStringFilters['bool'] = function($value) {
             if(is_bool($value)) return $value?"true":"false";
             return $value;
         };
-        
         $this->toStringFilters['resource'] = function($value) {
             if(is_resource($value)) return get_resource_type($value);
             return $value;
         };
-        
         $this->toStringFilters['exception'] = function($value, $extra) {
             if($value instanceof \Exception) {
                 if(isset($extra['key']) && $extra['key'] != "exception") {
@@ -101,7 +99,24 @@ class Epilog implements \ArrayAccess
             return $value;
         };
     }
-    
+
+    public function setLevel($level) {
+        if ($level[0] == "=") {
+            $this->strictlvl = true;
+            $level = substr($level, 1);
+        }
+        if (!array_key_exists($level, $this->levels)) {
+            $this->level = 'info';
+            trigger_error("Undefined log level \"{$level}\"", E_USER_NOTICE);
+        }else{
+            $this->level = $level;
+        }
+    }
+
+    public function getLevel() {
+        return ($this->strictlvl?'=':'').$this->level;
+    }
+
     public function toString($value, $extra = []) {
         foreach($this->toStringFilters as $filter) {
             $value = $filter($value, $extra);
@@ -113,6 +128,9 @@ class Epilog implements \ArrayAccess
     {
         if ($this->turnedOff || (isset($this->levels[$level]) && $this->levels[$this->level] > $this->levels[$level])) return;
 
+        if(!is_string($text)) {
+            $text = $this->toString($text);
+        }
         $text = (string)$text;
         $logString = "";
         if(strlen($text)) {
@@ -175,16 +193,14 @@ class Epilog implements \ArrayAccess
         }
     }
 
-    public function __invoke($logString, array $context = [], $level = "info", $timer = "")
+    public function __invoke($text, array $context = [], $level = "info", $timer = null)
     {
         return call_user_func_array([$this, "put"], func_get_args());
     }
 
     public function offsetSet($offset, $value)
     {
-        if (in_array($value, ["start", "reset"])) {
-            $this->timers[$offset] = microtime(true);
-        }
+
     }
 
     public function offsetExists($offset)
@@ -214,5 +230,31 @@ class Epilog implements \ArrayAccess
     public function __toString()
     {
         return implode('', $this->buffer);
+    }
+
+    public function turnOff() {
+        $this->turnedOff = true;
+    }
+
+    public function turnOn() {
+        $this->turnedOff = false;
+    }
+
+    public function status() {
+        return $this->turnedOff?"off":"on";
+    }
+
+    public function timerStart($timer) {
+        $this->timers[$timer] = microtime(true);
+    }
+
+    public function timerReset($timer) {
+        $this->timerStart($timer);
+    }
+
+    public function timerStop($timer) {
+        if(isset($this->timers[$timer])) {
+            unset($this->timers[$timer]);
+        }
     }
 }
