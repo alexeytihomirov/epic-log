@@ -142,4 +142,4 @@ class Pepilog extends Epilog implements LoggerInterface
     {
         $this->log(LogLevel::DEBUG, $message, $context);
     }
-} 
+}
