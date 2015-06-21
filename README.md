@@ -1,3 +1,5 @@
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/fe2a151f-ac72-4735-9f69-dd996ec5cd45/big.png)](https://insight.sensiolabs.com/projects/fe2a151f-ac72-4735-9f69-dd996ec5cd45)
+
 Epilog - Logger for PHP 5.4+
 ============================
 
