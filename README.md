@@ -1,3 +1,5 @@
+[![Latest Stable Version](https://poser.pugx.org/epilog/epilog/v/stable)](https://packagist.org/packages/epilog/epilog) [![Total Downloads](https://poser.pugx.org/epilog/epilog/downloads)](https://packagist.org/packages/epilog/epilog) [![Latest Unstable Version](https://poser.pugx.org/epilog/epilog/v/unstable)](https://packagist.org/packages/epilog/epilog) [![License](https://poser.pugx.org/epilog/epilog/license)](https://packagist.org/packages/epilog/epilog)
+
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/fe2a151f-ac72-4735-9f69-dd996ec5cd45/big.png)](https://insight.sensiolabs.com/projects/fe2a151f-ac72-4735-9f69-dd996ec5cd45)
 
 Epilog - Logger for PHP 5.4+
